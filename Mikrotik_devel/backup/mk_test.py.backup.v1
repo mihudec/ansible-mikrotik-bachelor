@@ -1,0 +1,73 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+# THIS IS ANSIBLE MODULE USED FOR CONFIGUTING MIKROTIK ROUTEROS DEVICES
+
+DOCUMENTATION = '''
+---
+module: mk_test
+author: Miroslav Hudec
+version_added: "0.2"
+short_description: Manage Mikrotik Routers
+requirements: [ RosAPI ]
+description:
+    - Manage Mikrotik RouterOS devices.
+options:
+
+'''
+
+from ansible.module_utils.basic import *
+from ansible.modules.RosAPI import Core
+
+# Import Ansible module parameters
+ansible = AnsibleModule(
+    argument_spec=dict(
+        hostname=dict(required=True, type='str'),
+        username=dict(required=True, type='str'),
+        password=dict(required=True, type='str'),
+        remote_requests=dict(required=False, type='str'),
+        servers=dict(required=False, type='str'),
+
+    ),
+    supports_check_mode=False
+)
+
+
+def main(): # main logic
+    # Initialize phase
+    output = {"changed": True, "failed": True, "msg": "Everything is OK :-)"}
+    hostname = ansible.params['hostname']
+    username = ansible.params['username']
+    password = ansible.params['password']
+
+    args = {}
+
+    if "servers" in ansible.params.keys():
+        args["servers"] = ansible.params['servers']
+
+
+
+    lst = ["/ip/dns/set"]
+    # Connect
+    mikrotik = Core(hostname, DEBUG=False)
+    mikrotik.login(username, password)
+
+    # Check if there's need to change anything
+    response = mikrotik.talk(["/ip/dns/print"])
+    isSame = True
+    for key in args.keys():
+       if args[key] != response[0][1]["="+key]:
+           isSame = False
+
+
+    if isSame:
+        ansible.exit_json(changed=False, msg="Already in desired state")
+
+    else:
+        # Create list for arguments
+        for a in args.keys():
+            lst.append("="+a+"="+str(args[a]))
+        mikrotik.talk(lst)
+        ansible.exit_json(changed=True, msg="Configured to desired state by Ansible")
+
+from ansible.module_utils.basic import *
+main()

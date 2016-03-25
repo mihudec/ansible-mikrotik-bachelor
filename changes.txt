@@ -1,0 +1,3 @@
+25.3.2016 16:20
+	-Vytvoøení projektu na GitHubu
+	-Nástin 1. kapitoly (Poèítaèové sítì) - teoretická èást
