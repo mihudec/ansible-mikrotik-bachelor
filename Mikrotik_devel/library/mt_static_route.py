@@ -36,9 +36,9 @@ from ansible.module_utils.basic import *
 # Import Ansible module parameters
 ansible = AnsibleModule(
         argument_spec=dict(
-                hostname=dict(required=True, type='str', aliases=["host"]),
-                username=dict(required=True, type='str', aliases=["user"]),
-                password=dict(required=True, type='str', aliases=["pass"]),
+                hostname=dict(required=False, type='str', aliases=["host"]),
+                username=dict(required=False, type='str', aliases=["user"]),
+                password=dict(required=False, type='str', aliases=["pass"]),
                 port=dict(required=False, type='int', default=8728),
                 dst_address=dict(required=True, type='str'),
                 gateway=dict(required=True, type='str'),

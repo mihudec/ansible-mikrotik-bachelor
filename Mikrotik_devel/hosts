@@ -1,0 +1,5 @@
+[routers]
+mikrotik hostname=192.168.1.100 username=admin password=Epuak3578@ dns_servers=192.168.1.1,8.8.8.8
+[virtual]
+virtual1 hostname=192.168.116.100 username=admin password="" dns_servers=192.168.116.1 gw_address=192.168.116.100/24
+virtual2 hostname=192.168.116.110 username=admin password="" dns_servers=192.168.116.1 gw_address=192.168.116.110/24
