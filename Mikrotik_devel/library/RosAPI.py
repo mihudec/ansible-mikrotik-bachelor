@@ -203,6 +203,36 @@ def prettify(data):
             print "%-20s: %50s" % (y, x[y])
 
 
+def readHosts(hostsfile="../hosts", DEBUG=False):
+
+    hostfile = open(hostsfile, mode='r')
+    DEBUG = False
+    # Determine number of lines in the file
+    num_lines = sum(1 for line in hostfile)
+    if DEBUG: print num_lines
+    hostfile.seek(0)
+
+
+    hostsdict = {}
+    # Create dictionary from file lines
+    for i in range(0, num_lines):
+        workline = hostfile.readline()
+        if DEBUG: print workline
+        # If line isn't empty
+        if workline and workline[0] != '[':
+
+            linearray = workline.split(' ')
+            if DEBUG: print linearray
+            linedict = dict(host=linearray[0].strip())
+            linearray.remove(linearray[0])
+            for i in range(1, len(linearray)):
+                if DEBUG: print linearray[i].split('=')
+                linedict[linearray[i].split('=')[0].strip()] = linearray[i].split('=')[1].strip()
+                hostsdict[linedict['host']] = linedict
+
+    if DEBUG: print linedict
+    return hostsdict
+
 def changeCheck(response, command, DEBUG=False):
 
     while True:
@@ -357,3 +387,4 @@ def API(path, action, hostname, username="admin", password="", command=None, por
             else:
                 mikrotik.close_connection()
                 return {"failed": True, "changed": changed, "msg": "Something went wrong..."}
+
