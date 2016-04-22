@@ -1,0 +1,11 @@
+- name: Mikrotik TEST
+  hosts: mikrotik
+  connection: local
+  gather_facts: no
+  vars:
+    dhcp_pool: testpool
+  tasks:
+     - name: Fetch script
+       mt_fetch: username={{username}} hostname={{hostname}} password={{password}} mode=ftp connection_username=mikrotik connection_password=mikrotik address="192.168.1.110" src_path=/fetch_6.34.4.rsc
+     - name: Raw module test
+       mt_raw: username={{username}} hostname={{hostname}} password={{password}} path=/

@@ -1,21 +1,13 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-from RosAPI import API
+from RosRaw import *
 
-def main():
+if __name__ == '__main__':
+    response = RosRaw(path="/system/package/", action="print", hostname="192.168.1.100", \
+        username="admin", password="Epuak3578@", DEBUG=True, command=["?name=ipv6"])
 
-    # Basic variables
-    path = "/ip/address/"
-    action = "add"
-    hostname = "192.168.116.110"
-    password = ""
-    command = {"interface": "ether2", "address": "192.168.110.1/24"}
-
-
-    r = API(path, action, hostname, password=password, command=command, DEBUG=True)
-    print r
+    print response
 
 
 
-main()

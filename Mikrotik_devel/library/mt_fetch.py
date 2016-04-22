@@ -44,18 +44,19 @@ ansible = AnsibleModule(
                 username=dict(required=False, type='str', aliases=["user"]),
                 password=dict(required=False, type='str', aliases=["pass"]),
                 port=dict(required=False, type='int', default=8728),
-                network_address=dict(required=False, type='str'),
-                gateway=dict(required=False, type='str'),
-                dns_server=dict(required=False, type='str'),
-                netmask=dict(required=False, type='str'),
-                domain=dict(required=False, type='str'),
-                ntp_server=dict(required=False, type='str'),
-
+                mode=dict(required=False, type='str', choices=["ftp", "http", "https"]),
+                src_path=dict(required=False, type='str'),
+                dst_path=dict(required=False, type='str'),
+                keep_result=dict(required=False, type='str', choices=["True", "False"]),
+                connection_username=dict(required=False, type='str', aliases=["con_user"]),
+                connection_password=dict(required=False, type='str', aliases=["con_pass"]),
+                upload=dict(required=False, type='str', choices=["True", "False"]),
+                url=dict(required=False, type='str'),
+                address=dict(required=False, type='str', aliases=["addr"])
         ),
         supports_check_mode=False,
 
 )
-
 
 def main():  # main logic
 
@@ -72,8 +73,8 @@ def main():  # main logic
     while True:
 
         # DHCP Server
-        path = "/ip/dhcp-server/network/"
-        action = ""
+        path = "/tool/fetch"
+        action = "raw"
 
         command = {}
 
@@ -83,18 +84,24 @@ def main():  # main logic
             username = ansible.params['username']
         if ("password" in ansible.params.keys()) and (ansible.params['password'] != None):
             password = ansible.params['password']
-        if ("network_address" in ansible.params.keys()) and (ansible.params['network_address'] != None):
-            command["address"] = ansible.params['network_address']
-        if ("gateway" in ansible.params.keys()) and (ansible.params['gateway'] != None):
-            command["gateway"] = ansible.params['gateway']
-        if ("dns_server" in ansible.params.keys()) and (ansible.params['dns_server'] != None):
-            command["dns-server"] = ansible.params['dns_server']
-        if ("netmask" in ansible.params.keys()) and (ansible.params['netmask'] != None):
-            command["netmask"] = ansible.params['netmask']
+        if ("mode" in ansible.params.keys()) and (ansible.params['mode'] != None):
+            command["mode"] = ansible.params['mode']
+        if ("src_path" in ansible.params.keys()) and (ansible.params['src_path'] != None):
+            command["src-path"] = ansible.params['src_path']
+        if ("dst_path" in ansible.params.keys()) and (ansible.params['dst_path'] != None):
+            command["dst-path"] = ansible.params['dst_path']
+        if ("keep_result" in ansible.params.keys()) and (ansible.params['keep_result'] != None):
+            command["keep-result"] = ansible.params['keep_result']
         if ("domain" in ansible.params.keys()) and (ansible.params['domain'] != None):
             command["domain"] = ansible.params['domain']
-        if ("ntp_server" in ansible.params.keys()) and (ansible.params['ntp_server'] != None):
-            command["ntp-server"] = ansible.params['ntp_server']
+        if ("connection_username" in ansible.params.keys()) and (ansible.params['connection_username'] != None):
+            command["user"] = ansible.params['connection_username']
+        if ("connection_password" in ansible.params.keys()) and (ansible.params['connection_password'] != None):
+            command["password"] = ansible.params['connection_password']
+        if ("url" in ansible.params.keys()) and (ansible.params['url'] != None):
+            command["url"] = ansible.params['url']
+        if ("address" in ansible.params.keys()) and (ansible.params['address'] != None):
+            command["address"] = ansible.params['address']
 
         # Let RosAPI do the rest
         response = API(path, action, hostname, username, password, command=command, port=port)
