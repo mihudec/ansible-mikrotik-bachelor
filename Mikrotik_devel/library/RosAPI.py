@@ -2,239 +2,48 @@
 # -*- coding: utf-8 -*-
 #
 #
+from ansible.module_utils.RosCore import *
 
 
-class Core:
-    """Core part of Router OS API It contains methods necessary to extract raw data from the router.
-    If object is instanced with DEBUG = True parameter, it runs in verbosity mode.
-    Core part is taken mostly from http://wiki.mikrotik.com/wiki/Manual:API#Example_client."""
+class Auth:
 
-    def __init__(self, hostname, port=8728, DEBUG=False):
-        import socket
-        self.DEBUG = DEBUG
-        self.hostname = hostname
-        self.port = port
-        self.currenttag = 0
-        self.sk = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sk.connect((self.hostname, self.port))
-
-    def login(self, username, pwd):
-        import binascii
-        from hashlib import md5
-
-        for repl, attrs in self.talk(["/login"]):
-            chal = binascii.unhexlify(attrs['=ret'])
-        md = md5()
-        md.update('\x00')
-        md.update(pwd)
-        md.update(chal)
-        r = self.talk(["/login", "=name=" + username, "=response=00" + binascii.hexlify(md.digest())])
-        return r
-
-    def talk(self, words):
-        if self.writeSentence(words) == 0: return
-        r = []
-        while 1:
-            i = self.readSentence()
-            if len(i) == 0: continue
-            reply = i[0]
-            attrs = {}
-            for w in i[1:]:
-                j = w.find('=', 1)
-                if (j == -1):
-                    attrs[w] = ''
-                else:
-                    attrs[w[:j]] = w[j + 1:]
-            r.append((reply, attrs))
-            if reply == '!done': return r
-
-    def writeSentence(self, words):
-        ret = 0
-        for w in words:
-            self.writeWord(w)
-            ret += 1
-        self.writeWord('')
-        return ret
-
-    def readSentence(self):
-        r = []
-        while 1:
-            w = self.readWord()
-            if w == '':
-                return r
-            r.append(w)
-
-    def writeWord(self, w):
-        if self.DEBUG:
-            print "<<< " + w
-        self.writeLen(len(w))
-        self.writeStr(w)
-
-    def readWord(self):
-        ret = self.readStr(self.readLen())
-        if self.DEBUG:
-            print ">>> " + ret
-        return ret
-
-    def writeLen(self, l):
-        if l < 0x80:
-            self.writeStr(chr(l))
-        elif l < 0x4000:
-            l |= 0x8000
-            self.writeStr(chr((l >> 8) & 0xFF))
-            self.writeStr(chr(l & 0xFF))
-        elif l < 0x200000:
-            l |= 0xC00000
-            self.writeStr(chr((l >> 16) & 0xFF))
-            self.writeStr(chr((l >> 8) & 0xFF))
-            self.writeStr(chr(l & 0xFF))
-        elif l < 0x10000000:
-            l |= 0xE0000000
-            self.writeStr(chr((l >> 24) & 0xFF))
-            self.writeStr(chr((l >> 16) & 0xFF))
-            self.writeStr(chr((l >> 8) & 0xFF))
-            self.writeStr(chr(l & 0xFF))
-        else:
-            self.writeStr(chr(0xF0))
-            self.writeStr(chr((l >> 24) & 0xFF))
-            self.writeStr(chr((l >> 16) & 0xFF))
-            self.writeStr(chr((l >> 8) & 0xFF))
-            self.writeStr(chr(l & 0xFF))
-
-    def readLen(self):
-        c = ord(self.readStr(1))
-        if (c & 0x80) == 0x00:
-            pass
-        elif (c & 0xC0) == 0x80:
-            c &= ~0xC0
-            c <<= 8
-            c += ord(self.readStr(1))
-        elif (c & 0xE0) == 0xC0:
-            c &= ~0xE0
-            c <<= 8
-            c += ord(self.readStr(1))
-            c <<= 8
-            c += ord(self.readStr(1))
-        elif (c & 0xF0) == 0xE0:
-            c &= ~0xF0
-            c <<= 8
-            c += ord(self.readStr(1))
-            c <<= 8
-            c += ord(self.readStr(1))
-            c <<= 8
-            c += ord(self.readStr(1))
-        elif (c & 0xF8) == 0xF0:
-            c = ord(self.readStr(1))
-            c <<= 8
-            c += ord(self.readStr(1))
-            c <<= 8
-            c += ord(self.readStr(1))
-            c <<= 8
-            c += ord(self.readStr(1))
-        return c
-
-    def writeStr(self, str):
-        n = 0;
-        while n < len(str):
-            r = self.sk.send(str[n:])
-            if r == 0: raise RuntimeError, "connection closed by remote end"
-            n += r
-
-    def readStr(self, length):
-        ret = ''
-        while len(ret) < length:
-            s = self.sk.recv(length - len(ret))
-            if s == '': raise RuntimeError, "connection closed by remote end"
-            ret += s
-        return ret
-
-    def response_handler(self, response):
-        """Handles API response and remove unnessesary data"""
-
-        # if respons end up successfully
-        if response[-1][0] == "!done":
-            r = []
-            # for each returned element
-            for elem in response[:-1]:
-                # if response is valid Mikrotik returns !re, if error !trap
-                # before each valid element, there is !re
-                if elem[0] == "!re":
-                    # take whole dictionary of single element
-                    element = elem[1]
-                    # with this loop we strip equals in front of each keyword
-                    for att in element.keys():
-                        element[att[1:]] = element[att]
-                        element.pop(att)
-                    # collect modified data in new array
-                    r.append(element)
-        return r
-
-    def run_interpreter(self):
-        import select, sys
-        inputsentence = []
-
-        while 1:
-            r = select.select([self.sk, sys.stdin], [], [], None)
-            if self.sk in r[0]:
-                # something to read in socket, read sentence
-                x = self.readSentence()
-
-            if sys.stdin in r[0]:
-                # read line from input and strip off newline
-                l = sys.stdin.readline()
-                l = l[:-1]
-
-                # if empty line, send sentence and start with new
-                # otherwise append to input sentence
-                if l == '':
-                    self.writeSentence(inputsentence)
-                    inputsentence = []
-                else:
-                    inputsentence.append(l)
-        return 0
-
-    def close_connection(self):
-        self.sk.close()
+    def __init__(self, host, hostsfile="/etc/ansible/hosts", DEBUG=False):
+        hostsfile = open(hostsfile, mode='r')
+        DEBUG = False
+        # Determine number of lines in the file
+        num_lines = sum(1 for line in hostsfile)
+        if DEBUG: print num_lines
+        hostsfile.seek(0)
 
 
-def prettify(data):
-    for x in data:
-        for y in x.keys():
-            print "%-20s: %50s" % (y, x[y])
+        hostsdict = {}
+        # Create dictionary from file lines
+        for i in range(0, num_lines):
+            workline = hostsfile.readline()
+            if DEBUG: print workline
+            # If line isn't empty
+            if workline and workline[0] != '[':
 
+                linearray = workline.split(' ')
+                if DEBUG: print linearray
+                linedict = dict(host=linearray[0].strip())
+                linearray.remove(linearray[0])
+                for i in range(0, len(linearray)):
+                    if DEBUG: print linearray[i].split('=')
+                    linedict[linearray[i].split('=')[0].strip()] = linearray[i].split('=')[1].strip()
+                    hostsdict[linedict['host']] = linedict
 
-def readHosts(hostsfile="../hosts", DEBUG=False):
-
-    hostfile = open(hostsfile, mode='r')
-    DEBUG = False
-    # Determine number of lines in the file
-    num_lines = sum(1 for line in hostfile)
-    if DEBUG: print num_lines
-    hostfile.seek(0)
-
-
-    hostsdict = {}
-    # Create dictionary from file lines
-    for i in range(0, num_lines):
-        workline = hostfile.readline()
-        if DEBUG: print workline
-        # If line isn't empty
-        if workline and workline[0] != '[':
-
-            linearray = workline.split(' ')
-            if DEBUG: print linearray
-            linedict = dict(host=linearray[0].strip())
-            linearray.remove(linearray[0])
-            for i in range(1, len(linearray)):
-                if DEBUG: print linearray[i].split('=')
-                linedict[linearray[i].split('=')[0].strip()] = linearray[i].split('=')[1].strip()
-                hostsdict[linedict['host']] = linedict
-
-    if DEBUG: print linedict
-    return hostsdict
+                if DEBUG: print linedict
+                if host in hostsdict.keys():
+                    if 'hostname' in hostsdict[host].keys():
+                        self.hostname = hostsdict[host]['hostname']
+                    if 'username' in hostsdict[host].keys():
+                        self.username = hostsdict[host]['username']
+                    if 'password' in hostsdict[host].keys():
+                        self.password = hostsdict[host]['password']
 
 def changeCheck(response, command, DEBUG=False):
-
+    priv_params = ["name"]
     while True:
         r = {"exists": "", "isSame": True}
         decision = []
@@ -245,7 +54,9 @@ def changeCheck(response, command, DEBUG=False):
                 for key in command.keys():
                     if str("=" + key) in response[i][1].keys():
                         if (command[key] == response[i][1]["=" + key]):
-                                decision[i] += 1
+                            decision[i] += 1
+                            if key in priv_params:
+                                decision[i] += 10
 
             if DEBUG == True: print decision, response
 
@@ -285,6 +96,15 @@ def changeCheck(response, command, DEBUG=False):
 
         return r
 
+def replyCheck(r):
+    reply = {"success": True}
+    for i in range(0,len(r)-1):
+        if r[i][0] == "!trap":
+            if '=message' in r[i][1].keys():
+                reply["message"] = r[i][1]['=message']
+            reply["success"] = False
+            break
+    return reply
 
 def intCheck(interface_name, hostname, username, password, port=8728):
     # Checks if desired interface exists
@@ -310,10 +130,11 @@ def intCheck(interface_name, hostname, username, password, port=8728):
             return {"msg": "Interface with specified name does not exists.", "Exists": False}
 
 
-def API(path, action, hostname, username="admin", password="", command=None, port=8728, DEBUG=False):
+def API(path, action, hostname="", username="admin", password="", command=None, port=8728, DEBUG=False):
     changed = False
     lst = []
     while True:
+
         # Connect
         mikrotik = Core(hostname, DEBUG=DEBUG)
         login = mikrotik.login(username, password)
@@ -328,55 +149,65 @@ def API(path, action, hostname, username="admin", password="", command=None, por
             if DEBUG == True:
                 print login
 
-        # Check if there's need to change anything
-        response = mikrotik.talk([path + "print"])
-        if DEBUG == True: print response
-        if action == "print":
-            return {"failed": False, "changed": changed, "msg": "No changes were made", "response": response}
-
-        r = changeCheck(response, command, DEBUG=DEBUG)
-
-        if r["isSame"]:
-            mikrotik.close_connection()
-            return {"failed": False, "changed": changed, "msg": "Already in desired state"}
-
+        #RAW modules
+        if action == "raw":
+            lst = [path]
         else:
-            # In case that similar object already exists
-            if r["exists"] == True:
+            # Check if there's need to change anything
+            response = mikrotik.talk([path + "print"])
+            if DEBUG == True: print response
 
-                # Create list for arguments
-                if "id" in r.keys():
-                    namematch = True
-                    if "name" in command.keys():
-                        for i in range(0, len(response)-1):
-                            if response[i][1]["=.id"] == r["id"]:
-                                namematch = (command["name"] == response[i][1]["=name"])
-                                break
-                        if namematch:
-                            lst = [path + "set", "=.id=" + r["id"]]
+
+            r = changeCheck(response, command, DEBUG=DEBUG)
+            if action == "print":
+                return {"failed": False, "changed": changed, "msg": "No changes were made", "response": response, "isSame": r["isSame"]}
+
+            if r["isSame"]:
+                mikrotik.close_connection()
+                return {"failed": False, "changed": changed, "msg": "Already in desired state."}
+
+            else:
+                # In case that similar object already exists
+                if r["exists"] == True:
+
+                    # Create list for arguments
+                    if "id" in r.keys():
+                        namematch = True
+                        if "name" in command.keys():
+                            for i in range(0, len(response)-1):
+                                if response[i][1]["=.id"] == r["id"]:
+                                    namematch = (command["name"] == response[i][1]["=name"])
+
+                                    break
+                            if namematch:
+                                lst = [path + "set", "=.id=" + r["id"]]
+                            else:
+                                lst = [path + "add"]
+                            del command["name"]
                         else:
-                            lst = [path + "add"]
+                            lst = [path + "set", "=.id=" + r["id"]]
                     else:
-                        lst = [path + "set", "=.id=" + r["id"]]
-                else:
-                    lst = [path + "set"]
+                        lst = [path + "set"]
 
-            # In case there's no similar object
-            elif r["exists"] == False:
-                # Create list for arguments
-                # Allow force set by module
-                if action == "set":
-                    lst = [path + "set"]
-                else:
-                    lst = [path + "add"]
+                # In case there's no similar object
+                elif r["exists"] == False:
+                    # Create list for arguments
+                    # Allow force set by module
+                    if action == "set":
+                        lst = [path + "set"]
+                    else:
+                        lst = [path + "add"]
 
 
-            # Add commands to argument string
-            for key in command.keys():
-                lst.append("=" + key + "=" + str(command[key]))
-            # Apply changes
+        # Add commands to argument string
+        for key in command.keys():
+            lst.append("=" + key + "=" + str(command[key]))
+
+
+
+        if action != "raw":
+             # Apply changes
             mikrotik.talk(lst)
-
             # Check if changes were actually applied
             if changeCheck(mikrotik.talk([path + "print"]), command, DEBUG=DEBUG)["isSame"]:
                 changed = True
@@ -388,3 +219,18 @@ def API(path, action, hostname, username="admin", password="", command=None, por
                 mikrotik.close_connection()
                 return {"failed": True, "changed": changed, "msg": "Something went wrong..."}
 
+        elif action == "raw":
+            raw_reply = mikrotik.talk(lst)
+            creply = replyCheck(raw_reply)
+            if DEBUG:
+                print raw_reply
+                print creply
+            if creply["success"]:
+
+                mikrotik.close_connection()
+                return {"failed": False, "changed": True, "msg": "RAW command ended successfully."}
+
+            else:
+
+                mikrotik.close_connection()
+                return {"failed": True, "changed": changed, "msg": "RAW command failed..."}
