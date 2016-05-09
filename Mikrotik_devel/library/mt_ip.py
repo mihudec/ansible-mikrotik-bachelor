@@ -41,7 +41,6 @@ options:
 
 from ansible.module_utils.basic import *
 
-
 # Import Ansible module parameters
 ansible = AnsibleModule(
         argument_spec=dict(

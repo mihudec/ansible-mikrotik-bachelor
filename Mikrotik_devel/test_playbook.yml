@@ -1,5 +1,5 @@
 - name: Mikrotik TEST
-  hosts: virtual1
+  hosts: all
   connection: local
   gather_facts: no
   vars:

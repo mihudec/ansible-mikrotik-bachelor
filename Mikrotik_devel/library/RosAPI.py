@@ -149,54 +149,52 @@ def API(path, action, hostname="", username="admin", password="", command=None, 
             if DEBUG == True:
                 print login
 
-        #RAW modules
-        if action == "raw":
-            lst = [path]
+
+        # Check if there's need to change anything
+        response = mikrotik.talk([path + "print"])
+        if DEBUG == True: print response
+
+
+
+        if action == "print":
+            return {"failed": False, "changed": changed, "msg": "No changes were made", "response": response, "isSame": None}
+
+        r = changeCheck(response, command, DEBUG=DEBUG)
+        if r["isSame"]:
+            mikrotik.close_connection()
+            return {"failed": False, "changed": changed, "msg": "Already in desired state."}
+
         else:
-            # Check if there's need to change anything
-            response = mikrotik.talk([path + "print"])
-            if DEBUG == True: print response
+            # In case that similar object already exists
+            if r["exists"] == True:
 
+                # Create list for arguments
+                if "id" in r.keys():
+                    namematch = True
+                    if "name" in command.keys():
+                        for i in range(0, len(response)-1):
+                            if response[i][1]["=.id"] == r["id"]:
+                                namematch = (command["name"] == response[i][1]["=name"])
 
-            r = changeCheck(response, command, DEBUG=DEBUG)
-            if action == "print":
-                return {"failed": False, "changed": changed, "msg": "No changes were made", "response": response, "isSame": r["isSame"]}
-
-            if r["isSame"]:
-                mikrotik.close_connection()
-                return {"failed": False, "changed": changed, "msg": "Already in desired state."}
-
-            else:
-                # In case that similar object already exists
-                if r["exists"] == True:
-
-                    # Create list for arguments
-                    if "id" in r.keys():
-                        namematch = True
-                        if "name" in command.keys():
-                            for i in range(0, len(response)-1):
-                                if response[i][1]["=.id"] == r["id"]:
-                                    namematch = (command["name"] == response[i][1]["=name"])
-
-                                    break
-                            if namematch:
-                                lst = [path + "set", "=.id=" + r["id"]]
-                            else:
-                                lst = [path + "add"]
-                            del command["name"]
-                        else:
+                                break
+                        if namematch:
                             lst = [path + "set", "=.id=" + r["id"]]
+                        else:
+                            lst = [path + "add"]
+                        del command["name"]
                     else:
-                        lst = [path + "set"]
+                        lst = [path + "set", "=.id=" + r["id"]]
+                else:
+                    lst = [path + "set"]
 
-                # In case there's no similar object
-                elif r["exists"] == False:
-                    # Create list for arguments
-                    # Allow force set by module
-                    if action == "set":
-                        lst = [path + "set"]
-                    else:
-                        lst = [path + "add"]
+            # In case there's no similar object
+            elif r["exists"] == False:
+                # Create list for arguments
+                # Allow force set by module
+                if action == "set":
+                    lst = [path + "set"]
+                else:
+                    lst = [path + "add"]
 
 
         # Add commands to argument string
@@ -205,32 +203,17 @@ def API(path, action, hostname="", username="admin", password="", command=None, 
 
 
 
-        if action != "raw":
-             # Apply changes
-            mikrotik.talk(lst)
-            # Check if changes were actually applied
-            if changeCheck(mikrotik.talk([path + "print"]), command, DEBUG=DEBUG)["isSame"]:
-                changed = True
 
-                mikrotik.close_connection()
-                return {"failed": False, "changed": changed, "msg": "Configured to desired state by Ansible"}
+        # Apply changes
+        mikrotik.talk(lst)
+        # Check if changes were actually applied
+        if changeCheck(mikrotik.talk([path + "print"]), command, DEBUG=DEBUG)["isSame"]:
+            changed = True
 
-            else:
-                mikrotik.close_connection()
-                return {"failed": True, "changed": changed, "msg": "Something went wrong..."}
+            mikrotik.close_connection()
+            return {"failed": False, "changed": changed, "msg": "Configured to desired state by Ansible"}
 
-        elif action == "raw":
-            raw_reply = mikrotik.talk(lst)
-            creply = replyCheck(raw_reply)
-            if DEBUG:
-                print raw_reply
-                print creply
-            if creply["success"]:
+        else:
+            mikrotik.close_connection()
+            return {"failed": True, "changed": changed, "msg": "Something went wrong..."}
 
-                mikrotik.close_connection()
-                return {"failed": False, "changed": True, "msg": "RAW command ended successfully."}
-
-            else:
-
-                mikrotik.close_connection()
-                return {"failed": True, "changed": changed, "msg": "RAW command failed..."}
