@@ -31,17 +31,26 @@ def main():  # main logic
     import subprocess
     import fcntl
     import getpass
+<<<<<<< HEAD
     import pexpect
 
     # Define variables
     mac_address = "00:0c:29:7f:41:3f"
     username = "admin"
     password = ""
+=======
+
+    # Define variables
+    mac_address = "00:0c:29:7f:41:3f"
+    username = "ansible"
+    password = "ansible"
+>>>>>>> origin/ansible-mikrotik-bachelor
     new_user = "ansible"
     new_password = "ansible"
     ip = "192.168.116.110/24"
     identity = "VirtualClone"
 
+<<<<<<< HEAD
     child = pexpect.spawn("mactelnet " + mac_address)
     child.logfile = sys.stdout
     child.expect("Login:")
@@ -59,6 +68,8 @@ def main():  # main logic
 
 
 
+=======
+>>>>>>> origin/ansible-mikrotik-bachelor
 
 
 from ansible.module_utils.basic import *

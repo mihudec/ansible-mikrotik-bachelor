@@ -119,6 +119,7 @@ def main():
                        DEBUG=debug, timeout=100)
     # Decide if output should be sorted by ID or Src-MAC
     duplicate = False
+
     ids = []
     for key in inventory.keys():
         if inventory[key]["ID"] not in ids:
