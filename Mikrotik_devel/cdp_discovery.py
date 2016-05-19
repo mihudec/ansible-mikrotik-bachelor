@@ -80,15 +80,15 @@ def on_cdp_packet(header, data):
 
     output = {'ID': cdp_info[cdp.CDP_DEVID], 'IP': address, 'Port': cdp_info[cdp.CDP_PORTID], \
               'Version': cdp_info[cdp.CDP_VERSION], \
-              'Platform':cdp_info[cdp.CDP_PLATFORM], "Source-MAC": src_mac}
+              'Platform':cdp_info[cdp.CDP_PLATFORM], "Source_MAC": src_mac}
     if debug: print output
 
-    if output["Source-MAC"] in inventory.keys(): # if there is record in inventory
-        if output == inventory[output["Source-MAC"]]: # if records are identical
+    if output["Source_MAC"] in inventory.keys(): # if there is record in inventory
+        if output == inventory[output["Source_MAC"]]: # if records are identical
             escape = True
             if debug: print "Captured duplicate packet. Exiting."
     else:
-        inventory[output["Source-MAC"]] = output
+        inventory[output["Source_MAC"]] = output
 
 
 

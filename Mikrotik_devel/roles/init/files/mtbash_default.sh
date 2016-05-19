@@ -51,4 +51,4 @@ sleep 1
 #END
 expect -i $ses "*>*"
 exp_send -i $ses "^D"
-exit
+exit 0

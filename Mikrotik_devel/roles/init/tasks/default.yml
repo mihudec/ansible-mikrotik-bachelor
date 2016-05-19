@@ -1,0 +1,3 @@
+---
+  - name: Add Default Configuration
+    local_action: script mtbash_default.sh {{Source_MAC}} {{default_user}} {{default_password}} {{ID}} ansible ansible {{Port}} {{IP}}

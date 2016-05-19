@@ -1,0 +1,3 @@
+---
+  - name: Clear MikroTik Configuration
+    local_action: script mtbash_clean.sh {{Source_MAC}} {{default_user}} {{default_password}}

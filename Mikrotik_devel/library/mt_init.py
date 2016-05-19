@@ -31,6 +31,7 @@ def main():  # main logic
     import subprocess
     import fcntl
     import getpass
+    import pexpect
 
     # Define variables
     mac_address = "00:0c:29:7f:41:3f"
@@ -40,6 +41,23 @@ def main():  # main logic
     new_password = "ansible"
     ip = "192.168.116.110/24"
     identity = "VirtualClone"
+
+    child = pexpect.spawn("mactelnet " + mac_address)
+    child.logfile = sys.stdout
+    child.expect("Login:")
+    child.sendline("admin")
+    child.expect("Password:")
+    child.sendline("")
+    child.expect("done")
+    time.sleep(2)
+    child.send("\r")
+    time.sleep(2)
+    child.sendline("/system reboot\r")
+    child.expect("[y/N]")
+    child.sendline("y")
+    child.terminate()
+
+
 
 
 

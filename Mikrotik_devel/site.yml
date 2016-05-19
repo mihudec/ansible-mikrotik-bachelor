@@ -1,0 +1,9 @@
+- name: Init Playbook # This playbook resets MikroTik devices and assingns IP addresses to connected ports
+  hosts: mikrotiks
+  connection: local
+  gather_facts: no
+  vars:
+    default_user: admin
+    default_password: "''"
+  roles:
+    - init

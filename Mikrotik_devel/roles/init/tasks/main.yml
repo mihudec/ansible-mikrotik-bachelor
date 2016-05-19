@@ -1,0 +1,4 @@
+---
+  - include: init.yml
+  - pause: minutes=1
+  - include: default.yml

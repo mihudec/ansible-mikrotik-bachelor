@@ -8,7 +8,7 @@ set pass [lindex $argv 2]
 #Init phase
 set ses 1
 
-#set $::env(TERM) xterm
+set $::env(TERM) xterm
 spawn "mactelnet" "$mac"
 set ses $spawn_id
 set timeout 200
