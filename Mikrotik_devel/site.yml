@@ -5,5 +5,7 @@
   vars:
     default_user: admin
     default_password: "''"
+    new_user: ansible
+    new_password: ansible
   roles:
     - init

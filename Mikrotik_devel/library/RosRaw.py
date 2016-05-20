@@ -6,7 +6,7 @@
 from ansible.module_utils.RosCore import *
 
 
-def RosRaw(path, action, hostname="", username="admin", password="", command=None, port=8728, DEBUG=False):
+def RosRaw(path, action, hostname="", username="admin", password="", command="", port=8728, DEBUG=False):
 
     lst = [path + action]
     while True:
@@ -24,8 +24,9 @@ def RosRaw(path, action, hostname="", username="admin", password="", command=Non
             if DEBUG == True:
                 print login
 
-        for i in range(0, len(command)):
-            lst.append(command[i])
+        if len(command) != 0:
+            for i in range(0, len(command)):
+                lst.append(command[i])
 
         raw_response = mikrotik.talk(lst)
         mikrotik.close_connection()

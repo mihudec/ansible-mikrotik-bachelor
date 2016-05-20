@@ -43,7 +43,7 @@ class Auth:
                         self.password = hostsdict[host]['password']
 
 def changeCheck(response, command, DEBUG=False):
-    priv_params = ["name"]
+    priv_params = ["name", "comment"]
     while True:
         r = {"exists": "", "isSame": True}
         decision = []
@@ -56,7 +56,7 @@ def changeCheck(response, command, DEBUG=False):
                         if (command[key] == response[i][1]["=" + key]):
                             decision[i] += 1
                             if key in priv_params:
-                                decision[i] += 10
+                                decision[i] += 9
 
             if DEBUG == True: print decision, response
 
@@ -129,6 +129,27 @@ def intCheck(interface_name, hostname, username, password, port=8728):
             interfaceExists = False
             return {"msg": "Interface with specified name does not exists.", "Exists": False}
 
+
+def digestArg(argument, backwards=False):
+    l = list(argument)
+    if backwards:
+        # Hyphens to underscores
+        for i in range(0, len(argument) - 1):
+            if l[i] == "-":  # Find
+                l[i] = "_"  # Replace with
+    else:
+        # Underscores to hyphens
+        for i in range(0, len(argument) - 1):
+            if l[i] == "_":  # Find
+                l[i] = "-"  # Replace with
+    newarg = "".join(l)
+    return newarg
+
+def stripResponse(response):
+    strippedresponse = {}
+    for key in response.keys():
+        strippedresponse[key[1:]] = response[key]
+    return strippedresponse
 
 def API(path, action, hostname="", username="admin", password="", command=None, port=8728, DEBUG=False):
     changed = False

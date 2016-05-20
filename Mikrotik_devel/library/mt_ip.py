@@ -67,7 +67,7 @@ def main():
     username = ansible.params['username']
     password = ansible.params['password']
     port = ansible.params['port']
-    command = {"address": ansible.params['address'], "interface": ansible.params['interface']}
+    command = {"address": ansible.params['address'], "interface": ansible.params['interface'], "disabled": ansible.params["disabled"]}
     path = "/ip/address/"
     action = ""
 
@@ -83,11 +83,6 @@ def main():
 
         # Let RosAPI do the rest
         response = API(path, action, hostname, username, password, command=command, port=port)
-
-        # Enable or disable interface
-        if (not response['failed']) and ('disabled' in ansible.params.keys()):
-            command["disabled"] = ansible.params['disabled']
-            response = API(path, action, hostname, username, password, command=command, port=port)
 
         ansible.exit_json(failed=response['failed'], changed=response['changed'], msg=response['msg'])
         break

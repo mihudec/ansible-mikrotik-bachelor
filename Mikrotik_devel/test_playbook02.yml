@@ -1,23 +1,9 @@
 - name: Mikrotik TEST
-  hosts: virtual
+  hosts: Router1
   connection: local
   gather_facts: no
-  vars:
-    dhcp_pool: testpool
   tasks:
-  - name: DNS Setup
-    mt_dns: username={{default_user}} hostname={{IP}} password={{default_password}} servers=192.168.1.1,8.8.8.8 remote_requests="true"
-  - name: IP address setup
-    mt_ip: username={{default_user}} hostname={{IP}} password={{default_password}} address={{et2addr}} interface=ether2 disabled="false"
-  - name: DHCP Pool Setup
-    mt_ip_pool: username={{default_user}} hostname={{IP}} password={{default_password}} pool_name={{dhcp_pool}} pool_range=192.168.116.10-192.168.116.20
-  - name: DHCP Server Setup
-    mt_dhcp_srv: username={{default_user}} hostname={{IP}} password={{default_password}} name=TestServer address_pool={{dhcp_pool}} disabled="true" interface=ether1
-  - name: DHCP Options Setup
-    mt_dhcp_net: username={{default_user}} hostname={{IP}} password={{default_password}} network_address=192.168.116.0/24 gateway=192.168.116.1 dns_server=192.168.116.1
-  - name: Set static route
-    mt_static_route: username={{default_user}} hostname={{IP}} password={{default_password}} dst_address=192.168.10.0/24 gateway=192.168.10.1
-  - name: Source NAT
-    mt_nat: username={{default_user}} hostname={{IP}} password={{default_password}} out_interface=ether1 chain=srcnat action=masquerade
-  - name: Port Forwarding to machine SSH
-    mt_nat: username={{default_user}} hostname={{IP}} password={{default_password}} chain=dstnat action=dst-nat dst_port=8022 to_addresses=192.168.116.20 to_ports=22 protocol=tcp
+  - name: RIP setup
+    mt_rip: username={{username}} hostname={{IP}} password={{password}} interfaces=ether1,ether2 networks="192.168.116.0/24" send=v2 receive=v2 authentication=md5 authentication_key=mikrotik
+  - name: Configure brigde
+    mt_brctl: username={{username}} hostname={{IP}} password={{password}} interfaces=ether2 names=bridge0,bridge2 disabled="false"
