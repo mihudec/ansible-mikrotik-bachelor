@@ -1,3 +1,0 @@
-[mikrotiks]
-Test1 Source_MAC="00:0c:29:3a:7c:f6" Identity="Virtual1" IP="192.168.116.100/24" Port="ether1"
-Test2 Source_MAC="00:0c:29:7f:41:3f" Identity="Virtual2" IP="192.168.116.110/24" Port="ether1"

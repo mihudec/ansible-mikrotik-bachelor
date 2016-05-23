@@ -60,7 +60,7 @@ def main():  # main logic
 
     path = "/ip/dns/"
     # This module forces SET option
-    action = "set"
+    action = ""
 
     command = {}
 
@@ -73,7 +73,7 @@ def main():  # main logic
 
 
     while True:
-        response = API(path, action, hostname, port=port, username=username, password=password, command=command)
+        response = API(path=path, action=None, hostname=hostname, port=port, username=username, password=password, command=command)
         ansible.exit_json(failed=response['failed'], changed=response['changed'], msg=response['msg'])
         break
 

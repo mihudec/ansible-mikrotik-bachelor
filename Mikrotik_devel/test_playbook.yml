@@ -1,26 +1,46 @@
 - name: Mikrotik TEST
-  hosts: all
+  hosts: Router1
   connection: local
   gather_facts: no
   vars:
     dhcp_pool: testpool
-    username: ansible
-    password: ansible
+    username: admin
+    password: ""
 
   tasks:
   - name: DNS Setup
-    mt_dns: username={{username}} hostname={{IP}} password={{password}} servers=192.168.116.1,8.8.8.8 remote_requests="true"
+    mt_dns: username={{username}} hostname={{IP}} password={{password}}
+      servers="192.168.50.1"
+      remote_requests="false"
   - name: IP address setup
-    mt_ip: username={{username}} hostname={{IP}} password={{password}} address={{et2addr}} interface=ether2 disabled="false"
-  - name: DHCP Pool Setup
-    mt_ip_pool: username={{username}} hostname={{IP}} password={{password}} pool_name={{dhcp_pool}} pool_range=192.168.116.10-192.168.116.20
-  - name: DHCP Server Setup
-    mt_dhcp_srv: username={{username}} hostname={{IP}} password={{password}} name=TestServer address_pool={{dhcp_pool}} disabled="true" interface=ether1
-  - name: DHCP Options Setup
-    mt_dhcp_net: username={{username}} hostname={{IP}} password={{password}} network_address=192.168.116.0/24 gateway=192.168.116.1 dns_server=192.168.116.1
+    mt_ip: username={{username}} hostname={{IP}} password={{password}}
+      address={{et2addr}}
+      interface=ether2
+      comment="et2-ip"
+  - name: Add bridge interface
+    mt_brctl: username={{username}} hostname={{IP}} password={{password}}
+      names=bridge-local
+      interfaces=ether2
   - name: Set static route
-    mt_static_route: username={{username}} hostname={{IP}} password={{password}} dst_address=192.168.10.0/24 gateway=192.168.10.1
+    mt_static_route: username={{username}} hostname={{IP}} password={{password}}
+      dst_address=192.168.10.0/24
+      gateway=192.168.10.10
+      comment="Some network"
   - name: Source NAT
-    mt_nat: username={{username}} hostname={{IP}} password={{password}} out_interface=ether1 chain=srcnat action=masquerade
+    mt_nat: username={{username}} hostname={{IP}} password={{password}}
+      out_interface=ether1
+      chain=srcnat
+      action=masquerade
   - name: Port Forwarding to machine SSH
-    mt_nat: username={{username}} hostname={{IP}} password={{password}} chain=dstnat action=dst-nat dst_port=8022 to_addresses=192.168.116.20 to_ports=22 protocol=tcp
+    mt_nat: username={{username}} hostname={{IP}} password={{password}}
+      chain=dstnat
+      action=dst-nat
+      dst_port=8023
+      to_addresses="192.168.116.22"
+      to_ports=23
+      protocol=tcp
+      comment=Telnet
+  - name: Enable RIP protocol
+    mt_rip: username={{username}} hostname={{IP}} password={{password}}
+      interfaces=ether1,bridge0
+      redistribute_connected="true"

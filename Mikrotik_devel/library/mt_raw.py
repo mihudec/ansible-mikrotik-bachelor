@@ -5,7 +5,7 @@
 
 DOCUMENTATION = '''
 ---
-module: mt_dhcp_server
+module: mt_raw
 author: Miroslav Hudec
 version_added: ""
 short_description: Sets information provided by DHCP server
@@ -36,7 +36,14 @@ options:
 
 '''
 
+
+
+
+
+
 from ansible.module_utils.basic import *
+from ansible.module_utils.RosRaw import *
+from ansible.module_utils.RosAPI import *
 
 # Import Ansible module parameters
 ansible = AnsibleModule(
@@ -54,49 +61,51 @@ ansible = AnsibleModule(
         supports_check_mode=False,
 
 )
+"""
 
+# Debugging Section
+class AnsibleModule:
+    params = {"username": "admin", "hostname": "192.168.116.100", "password": "", "port": 8728, \
+              "command": [], "path": "/system/", "action": "reboot"}
+
+
+ansible = AnsibleModule
+"""
+
+
+# Global Variables
+privkeys = ["hostname", "username", "password", "port", "path", "action"]
+# Initialize phase
+# Required parameters
+hostname = ansible.params['hostname']
+username = ansible.params['username']
+password = ansible.params['password']
+port = ansible.params['port']
+DEBUG = False # This is only for debugging, if set to True Ansible will crash
+switch = True  # Glabal switch
 
 def main():  # main logic
 
-    from ansible.module_utils.RosRaw import RosRaw
-    from ansible.module_utils.RosAPI import *
     # Initialize phase
     # Required parameters
-
-    hostname = ansible.params['hostname']
-    username = ansible.params['username']
-    password = ansible.params['password']
-    port = ansible.params['port']
-
+    privkeys = ["hostname", "username", "password", "port", "path", "action"]
+    command = []
+    path = ansible.params["path"]
+    action = ansible.params["action"]
     while True:
+        if ansible.params["command"] is not None:
 
-        #For cases when we want to change some properties based on query
-        if ansible.params.has_key("query"):
-
-            path = ansible.params["path"]
-            action = "print"
-            command = ansible.params["query"]
+            for item in ansible.params["command"]:
+                command.append("=" + item)
 
 
-        command = ansible.params["command"]
 
-        raw_reply = RosRaw(path, action, hostname, username, password, command=command, port=port)
-
-        if raw_reply.has_key("failed"):
-            ansible.exit_json(failed=raw_reply["failed"], changed=raw_reply["changed"], msg=raw_reply["msg"])
-
-        elif raw_reply.has_key("response"):
-            creply = replyCheck(raw_reply)
-
-            if creply["success"]:
-
-                response = {"failed": False, "changed": True, "msg": "RAW command ended successfully."}
-
-            else:
-
-                response = {"failed": True, "changed": False, "msg": "RAW command failed..."}
-
-            ansible.exit_json(failed=response['failed'], changed=response['changed'], msg=response['msg'])
+        response = RosRaw(path, action, hostname, username, password, command=command, port=port, DEBUG=DEBUG)
+        creply = replyCheck(response)
+        if not creply["success"]:
+            ansible.fail_json(failed=True, changed=False, msg=str(response))
+        else:
+            ansible.exit_json(failed=False, changed=True, msg=str(response))
 
 
 from ansible.module_utils.basic import *

@@ -148,7 +148,7 @@ def main():  # main logic
                         print "Global RIP configuration is already in desired state."
 
         # Commands for RIP Network setup
-        if "networks" in ansible.params.keys():
+        if ansible.params["networks"] is not None:
             if DEBUG: print "RIP network setup will now be checked..."
             path = "/routing/rip/network/"
             action = "add"

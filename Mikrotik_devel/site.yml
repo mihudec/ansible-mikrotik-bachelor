@@ -7,5 +7,7 @@
     default_password: "''"
     new_user: ansible
     new_password: ansible
+    username: admin
+    password: ""
   roles:
-    - init
+    - default

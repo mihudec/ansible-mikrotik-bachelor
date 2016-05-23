@@ -1,0 +1,17 @@
+---
+  - name: Allow established and related connection
+    mt_firewall: username={{username}} hostname={{IP}} password={{password}}
+      chain=forward
+      action=accept
+      connection_state="established,related"
+  - name: Allow outside connection only for dstnat
+    mt_firewall: username={{username}} hostname={{IP}} password={{password}}
+      chain=forward
+      action=drop
+      connection_state=new
+      connection_nat_state="!nat"
+  - name: Drop invalid traffic
+    mt_firewall: username={{username}} hostname={{IP}} password={{password}}
+      chain=forward
+      action=drop
+      connection_state=invalid

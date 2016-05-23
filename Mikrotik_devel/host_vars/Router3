@@ -1,0 +1,14 @@
+ID: Router3
+IP: 192.168.116.120
+Platform: MikroTik
+Port: ether1
+Source_MAC: 00:0C:29:64:90:36
+Version: 6.32.3
+et1addr: "192.168.116.120/24"
+et2addr: "192.168.3.1/24"
+pool_ranges: "192.168.3.10 - 192.168.3.200"
+pool_name: POOL3
+dhcp_address: "192.168.3.0/24"
+rip_interfaces: ether1
+net_comment: NET3
+

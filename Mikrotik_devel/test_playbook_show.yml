@@ -1,0 +1,19 @@
+- name: Mikrotik Network Playbook
+  hosts: mikrotiks
+  connection: local
+  gather_facts: no
+  vars:
+
+  tasks:
+  - name: Ether2 IP address setup
+    mt_ip: username={{username}} hostname={{IP}} password={{password}}
+      address={{et2addr}}
+      interface=ether2
+      comment="et2-ip"
+  - include: roles/default/tasks/dhcp_server.yml
+  - name: Enable RIP protocol
+    mt_rip: username={{username}} hostname={{IP}} password={{password}}
+      interfaces={{rip_interfaces}}
+      redistribute_connected="true"
+      send=v2
+      receive=v2

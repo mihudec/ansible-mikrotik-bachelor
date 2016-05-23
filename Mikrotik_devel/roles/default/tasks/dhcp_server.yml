@@ -1,0 +1,16 @@
+---
+  - name: Create IP pool
+    mt_ip_pool: username={{username}} hostname={{IP}} password={{password}}
+      pool_name=pool1
+      pool_range=192.168.200.100-192.168.200.200
+  - name: DHCP Server Setup
+    mt_dhcp_srv: username={{username}} hostname={{IP}} password={{password}}
+      name=server1
+      address_pool=pool1
+      disabled="false"
+      interface=ether2
+  - name: DHCP Options Setup
+    mt_dhcp_net: username={{username}} hostname={{IP}} password={{password}}
+      network_address=192.168.116.0/24
+      gateway=192.168.200.1
+      dns_server=192.168.200.1

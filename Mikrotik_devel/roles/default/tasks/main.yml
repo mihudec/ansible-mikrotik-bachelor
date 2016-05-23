@@ -1,0 +1,17 @@
+---
+  - name: Create Bridge
+    mt_brctl: username={{username}} hostname={{IP}} password={{password}}
+      interfaces=ether2,ether3
+      names=bridge-local
+      disabled="false"
+      auto_isolate="false"
+  - name: Set IP address on bridge interface
+    mt_ip: username={{username}} hostname={{IP}} password={{password}}
+      interface="bridge-local"
+      address={{br_address}}
+  - name: Source NAT
+    mt_nat: username={{username}} hostname={{IP}} password={{password}}
+      chain=srcnat
+      action=masquerade
+      out_interface=ether1
+

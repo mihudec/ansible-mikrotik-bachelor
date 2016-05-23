@@ -1,0 +1,8 @@
+---
+  - name: Reboot device
+    mt_raw: username={{username}} hostname={{IP}} password={{password}} path="/system/" action=reboot
+  - name: Reboot to default
+    mt_raw: username={{username}} hostname={{IP}} password={{password}} path="/system/" action=reset-configuration
+  - name: Flush settings
+    mt_raw: username={{username}} hostname={{IP}} password={{password}} path="/system/" action=reset-configuration command="no-defaults=true"
+

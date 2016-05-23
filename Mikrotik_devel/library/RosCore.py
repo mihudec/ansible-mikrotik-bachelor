@@ -16,6 +16,7 @@ class Core:
         self.port = port
         self.currenttag = 0
         self.sk = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sk.settimeout(5)
         self.sk.connect((self.hostname, self.port))
 
     def login(self, username, pwd):

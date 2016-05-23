@@ -2,8 +2,29 @@
   hosts: Router1
   connection: local
   gather_facts: no
+  vars:
+    username: admin
+    password: ""
   tasks:
   - name: RIP setup
-    mt_rip: username={{username}} hostname={{IP}} password={{password}} interfaces=ether1,ether2 networks="192.168.116.0/24" send=v2 receive=v2 authentication=md5 authentication_key=mikrotik
+    mt_rip: username={{username}} hostname={{IP}} password={{password}}
+      interfaces=ether1,ether2
+      networks="192.168.116.0/24"
+      send=v2 receive=v2
+      authentication=md5
+      authentication_key=mikrotik
   - name: Configure brigde
-    mt_brctl: username={{username}} hostname={{IP}} password={{password}} interfaces=ether2 names=bridge0,bridge2 disabled="false"
+    mt_brctl: username={{username}} hostname={{IP}} password={{password}}
+      interfaces=!ether2,!ether3
+      names=bridge0
+      disabled="false"
+      auto_isolate="false"
+
+  handlers:
+    - name: Reboot device
+      mt_raw: username={{username}} hostname={{IP}} password={{password}} path="/system/" action=reboot
+    - name: Reboot to default
+      mt_raw: username={{username}} hostname={{IP}} password={{password}} path="/system/" action=reset-configuration
+    - name: Flush settings
+      mt_raw: username={{username}} hostname={{IP}} password={{password}} path="/system/" action=reset-configuration command="no-defaults=true"
+
