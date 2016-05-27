@@ -4,7 +4,7 @@
 
 DOCUMENTATION = '''
 ---
-module: mt_dhcp_server
+module: mt_static_route
 author: Miroslav Hudec
 version_added: ""
 short_description: Manage Mikrotik Routers

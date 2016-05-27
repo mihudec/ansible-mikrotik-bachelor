@@ -14,24 +14,6 @@ from dpkt import cdp
 
 
 
-def gather_options(argv):
-    global interface
-
-    help = "CDP discovery script help: \n" \
-           "usage:  cdp_discovery.py -i <interface>"
-    try:
-        opts, args = getopt.getopt(argv, "h:i:r:",["help=", "interface=", "raw="])
-    except getopt.GetoptError:
-        print help
-        sys.exit(2)
-    for opt, arg in opts:
-        if opt in ["-h", "--help"]:
-            print help
-            sys.exit()
-        elif opt in ["-i", "--interface"]:
-            interface = arg
-
-
 
 def discover_neighbors(interface, timeout=100, DEBUG=False):
     global escape
@@ -96,7 +78,7 @@ inventory = {}
 escape = False
 numpackets = 0
 debug = False
-interface = "eth1" # try default interface if no supplied
+interface = "eth0" # try default interface if no supplied
 option = ""
 
 
@@ -108,13 +90,14 @@ def main():
     global inventory
 
     args = sys.argv
-    #gather_options(args[0:2])
     if "--list" in args:
         option = "list"
     if "-D" in args:
         debug = True
+    if "-i" in args:
+        interface = args[args.index("-i")+1]
     if debug: print "Waiting for CDP packets..."
-
+    if debug: print args
     discover_neighbors(interface=interface,\
                        DEBUG=debug, timeout=100)
     # Decide if output should be sorted by ID or Src-MAC

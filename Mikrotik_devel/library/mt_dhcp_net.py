@@ -4,7 +4,7 @@
 
 DOCUMENTATION = '''
 ---
-module: mt_dhcp_server
+module: mt_dhcp_net
 author: Miroslav Hudec
 version_added: ""
 short_description: Sets information provided by DHCP server

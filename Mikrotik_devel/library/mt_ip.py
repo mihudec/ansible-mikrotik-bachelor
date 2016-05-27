@@ -65,11 +65,11 @@ ansible = AnsibleModule(
 # Debugging Section
 class AnsibleModule:  # Provides Ansible-like parameters
     params = {"username": "admin", "hostname": "192.168.116.100", "password": "", \
-              "interface": "!bridge-local", "port": 8728, "address": "192.168.201.1/24"}
+              "interface": "bridge-local", "port": 8728, "address": "192.168.201.1/24"}
 
 ansible = AnsibleModule
-
 """
+
 
 # Global Variables
 privkeys = ["hostname", "username", "password", "port", "path", "action"]

@@ -1,0 +1,16 @@
+- name: Testik playbook
+  hosts: Router1
+  connection: local
+  gather_facts: no
+  vars:
+    username: admin
+    password: ""
+  tasks:
+  - name: Ether2 IP address setup
+    mt_firewall: username={{username}} hostname={{IP}} password={{password}}
+      in_interface="ether1"
+      disabled=true
+      chain=forward
+      connection_state="invalid"
+      action=drop
+      comment=rule2

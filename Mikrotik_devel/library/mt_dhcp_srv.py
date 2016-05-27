@@ -4,7 +4,7 @@
 
 DOCUMENTATION = '''
 ---
-module: mt_dhcp_server
+module: mt_dhcp_srv
 author: Miroslav Hudec
 version_added: ""
 short_description: Sets DHCP server on interface

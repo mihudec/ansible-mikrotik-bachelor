@@ -152,6 +152,17 @@ def digestArgs(arguments):
             newargs[digestArg(key)] = arguments[key]
     return newargs
 
+def digestResponse(response):
+    newresponse = {}
+    if len(response) > 1:
+        response = response[:-1]
+        for i in range(0, len(response)):
+            newresponse[i] = {}
+            for key in response[i][1].keys():
+                newresponse[i][key[1:]] = response[i][1][key]
+        return newresponse
+    return "noObjects"
+
 def stripResponse(response):
     strippedresponse = {}
     for key in response.keys():
